@@ -211,14 +211,10 @@ def process_data(
             without access to this module
     """
     if to_voltage:
-        data = {
-            c: (pre, bytes_to_voltage(pre, d)) for (c, (pre, d)) in data.items()
-        }  # type: ignore
+        data = {c: (pre, bytes_to_voltage(pre, d)) for (c, (pre, d)) in data.items()}
 
     if to_dict:
-        data = {
-            c: (preamble_as_dict(pre), d) for (c, (pre, d)) in data.items()
-        }  # type: ignore
+        data = {c: (preamble_as_dict(pre), d) for (c, (pre, d)) in data.items()}  # type: ignore
 
     return data
 
