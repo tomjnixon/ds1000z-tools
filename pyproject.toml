@@ -1,0 +1,35 @@
+[build-system]
+requires = [
+  "setuptools >= 40.9.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ds1000z-tools"
+version = "0.0.1"
+dependencies = [
+    "numpy",
+    "pyvisa",
+    "tqdm",
+    "pyvisa-py",
+]
+
+[project.scripts]
+ds1000z-tools = "ds1000z_tools.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "mypy",
+]
+
+[tool.mypy]
+packages = "ds1000z_tools"
+warn_no_return = false
+
+[[tool.mypy.overrides]]
+module = [
+    'pyvisa',
+    'pyvisa_py.*',
+]
+ignore_missing_imports = true
