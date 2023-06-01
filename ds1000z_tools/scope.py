@@ -130,7 +130,8 @@ class DS1000Z:
             self.resource.write(":WAVeform:STOP {0}".format(stop))
 
             self.resource.write(":WAVeform:DATA?")
-            chunk_buf = self.resource.read_raw(stop - start + 11)
+            # 11 byte header plus newline
+            chunk_buf = self.resource.read_bytes(stop - start + 12)
             chunk = self._parse_DATA(chunk_buf)
             buf.extend(chunk)
 
