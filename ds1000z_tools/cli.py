@@ -66,9 +66,6 @@ def get_fname_format(args) -> tuple[str, str]:
     fname = args.fname
     format = args.format
 
-    # if format is not None and format not in write_formats:
-    #     raise UserError("unknown format:
-
     # fizzbuzz scenario IRL! it's tidier to cover all cases explicitly rather
     # than try to simplify this
     if fname is not None and format is not None:
