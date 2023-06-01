@@ -50,12 +50,15 @@ def detect_format(fname: str) -> str:
 def auto_fname(format: str) -> str:
     import datetime
     from pathlib import Path
+    import sys
 
     iso_date = datetime.datetime.now().replace(microsecond=0).isoformat()
 
     fname = f"ds1000z-{iso_date}.{format}"
     if Path(fname).exists():
         raise UserError("not overwriting existing file with auto-generated name")
+
+    print(fname, file=sys.stderr)
     return fname
 
 
