@@ -100,9 +100,10 @@ def parse_channels(channels_arg):
 
 
 def save_data(args):
-    rm, scope = connect(args)
-
     channels = parse_channels(args.channels)
+    fname, format = get_fname_format(args)
+
+    rm, scope = connect(args)
 
     if args.screen:
         data = scope.get_data_screen(channels)
@@ -113,7 +114,6 @@ def save_data(args):
 
     data = process_data(data, to_voltage=not args.raw, to_dict=True)
 
-    fname, format = get_fname_format(args)
     write_formats[format](fname, data)
 
 
