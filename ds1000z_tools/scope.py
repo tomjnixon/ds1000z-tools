@@ -184,6 +184,34 @@ class DS1000Z:
     def get_data_screen(self, channels: Optional[list[str]] = None) -> DataDict:
         return self._get_data(WavType.NORMal, channels)
 
+    def get_screenshot(
+        self, format: str = "PNG", color: bool = True, invert: bool = False
+    ) -> bytes:
+        """get a screen image"""
+        def fmt_bool(b: bool) -> str:
+            return "ON" if b else "OFF"
+
+        self.resource.write(
+            f":DISPlay:DATA? {fmt_bool(color)},{fmt_bool(invert)},{format}"
+        )
+
+        # read TMC-formatted data. it might be nice if this was merged with
+        # _parse_DATA, but for data reading we already know how many bytes
+        # we're going to get, and the docs say that N=9, so there's no reason
+        # to add yet another round-trip
+
+        hash_n = self.resource.read_bytes(2)
+        assert len(hash_n) == 2
+        assert hash_n[0:1] == b"#"
+
+        n_digits = int(hash_n[1:2])
+
+        n_bytes_str = self.resource.read_bytes(n_digits)
+        assert len(n_bytes_str) == n_digits
+
+        # +1 to consume newline
+        return self.resource.read_bytes(int(n_bytes_str) + 1)[:-1]
+
 
 def bytes_to_voltage(preamble: Preamble, data: np.ndarray) -> np.ndarray:
     """convert data bytes to voltages with aid of the preamble"""

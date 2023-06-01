@@ -117,6 +117,24 @@ def save_data(args):
     write_formats[format](fname, data)
 
 
+def save_screen(args):
+    from pathlib import Path
+
+    fname = args.fname
+
+    if fname is None:
+        fname = auto_fname("png")
+    else:
+        if Path(fname).suffix.lstrip(".").lower() != "png":
+            raise UserError("fname must end with .png")
+
+    rm, scope = connect(args)
+
+    data = scope.get_screenshot()
+    with open(fname, "wb") as f:
+        f.write(data)
+
+
 def parse_args():
     import argparse
 
@@ -169,6 +187,13 @@ def parse_args():
         "--channels",
         help="channels to save, comma-seperated names, e.g. '1', 'CHAN1', 'D0', 'MATH'",
     )
+
+    p_save_screen = subparsers.add_parser(
+        "save-screen",
+        help="save an image of the screen",
+    )
+    p_save_screen.set_defaults(func=save_screen)
+    p_save_screen.add_argument("fname", help="filename to write to", nargs="?")
 
     return parser, parser.parse_args()
 
