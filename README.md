@@ -2,7 +2,7 @@
 
 faster data export for rigol ds1000z oscilloscopes
 
-![oscilloscope screenshot and a plotted spectrogram](dev/header.png)
+![oscilloscope screenshot and a plotted spectrogram](doc/header.png)
 
 This package contains tools for downloading data and screenshots from rigol
 DS1000Z series oscilloscopes over a network. Features:
