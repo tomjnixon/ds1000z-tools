@@ -106,8 +106,8 @@ scripting you're better off just using [pyvisa] directly and
 Ultimately I couldn't find anything that works the way I wanted. I've used
 [da1054z](https://github.com/pklaus/ds1054z) for years to take screenshots as
 part of project documentation/notes. It still works OK, but taking 10 minutes
-to save data pushed gave me the necessary impetus to write this, and make it
-work exactly how I wanted.
+to save data gave me the necessary impetus to write this, and make it work
+exactly how I wanted.
 
 [pyvisa]: https://github.com/pyvisa/pyvisa
 [programming guide]: https://beyondmeasure.rigoltech.com/acton/attachment/1579/f-0386/1/-/-/-/-/DS1000Z_Programming%20Guide_EN.pdf
