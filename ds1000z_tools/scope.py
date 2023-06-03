@@ -90,7 +90,7 @@ class DS1000Z:
                 logging.warn("failed to set TCP_NODELAY")
 
     def is_stopped(self) -> bool:
-        return self.resource.query("TRIGger:STATus?") == "STOP"
+        return self.resource.query(":TRIGger:STATus?") == "STOP"
 
     def _get_preamble(self) -> Preamble:
         preamble = self.resource.query(":WAVeform:PREamble?")
@@ -151,7 +151,7 @@ class DS1000Z:
         channels = []
         for i in range(1, 5):
             name = f"CHAN{i}"
-            if int(self.resource.query(f"{name}:DISPlay?")):
+            if int(self.resource.query(f":{name}:DISPlay?")):
                 channels.append(name)
 
         return channels
