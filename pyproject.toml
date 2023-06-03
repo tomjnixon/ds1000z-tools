@@ -21,6 +21,7 @@ ds1000z-tools = "ds1000z_tools.cli:main"
 dev = [
     "black",
     "mypy",
+    "pytest",
 ]
 
 [tool.mypy]
