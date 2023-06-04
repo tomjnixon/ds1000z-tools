@@ -50,18 +50,18 @@ def get_pmap_message() -> tuple[bytes, int]:
 
 
 def try_addr(
-    rm: pyvisa.ResourceManager, addr: str, pattern: str
+    rm: pyvisa.ResourceManager, addr: str, idn_pattern: str
 ) -> Optional[pyvisa.Resource]:
     """try connecting to an instrument at addr; if we can connect and the IDN
-    string matches pattern, return it
+    string matches idn_pattern, return it
     """
 
     visa_addr = f"TCPIP::{addr}::INSTR"
 
     try:
         resource = rm.open_resource(visa_addr)
-        id_str = resource.query("*IDN?")
-        if re.search(pattern, id_str) is not None:
+        idn_str = resource.query("*IDN?")
+        if re.search(idn_pattern, idn_str) is not None:
             return resource
         resource.close()
 
@@ -71,9 +71,9 @@ def try_addr(
         warnings.warn(f"unknown exception type while trying to open {visa_addr}: {e}")
 
 
-def discover(rm: pyvisa.ResourceManager, pattern: str) -> Optional[pyvisa.Resource]:
+def discover(rm: pyvisa.ResourceManager, idn_pattern: str) -> Optional[pyvisa.Resource]:
     """find the first VXI-11 instrument whose "*IDN?" string matches the
-    pattern regex
+    idn_pattern regex
 
     this uses broadcast rfc1050 PMAPPROC_GETPORT messages rather than avahi;
     see get_pmap_message. the response is not parsed; it's possible, but it
@@ -112,7 +112,7 @@ def discover(rm: pyvisa.ResourceManager, pattern: str) -> Optional[pyvisa.Resour
                         continue
                     seen.add(fromaddr)
 
-                    resource = try_addr(rm, fromaddr, pattern)
+                    resource = try_addr(rm, fromaddr, idn_pattern)
                     if resource is not None:
                         return resource
                 else:
