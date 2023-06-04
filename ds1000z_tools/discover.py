@@ -2,6 +2,7 @@ import warnings
 import pyvisa
 import re
 from typing import Optional
+from .resource import fixup_resource
 
 
 def get_pmap_message() -> tuple[bytes, int]:
@@ -49,35 +50,45 @@ def get_pmap_message() -> tuple[bytes, int]:
     return packer.get_buf(), PMAP_PORT
 
 
-def try_addr(
-    rm: pyvisa.ResourceManager, addr: str, idn_pattern: str
+def try_connect(
+    rm: pyvisa.ResourceManager, resource_name: str, idn_pattern: str
 ) -> Optional[pyvisa.Resource]:
-    """try connecting to an instrument at addr; if we can connect and the IDN
-    string matches idn_pattern, return it
+    """try connecting to an instrument with resource_name; if we can connect
+    and the IDN string matches idn_pattern, return it
     """
-
-    visa_addr = f"TCPIP::{addr}::INSTR"
-
     try:
-        resource = rm.open_resource(visa_addr)
+        resource = rm.open_resource(resource_name)
+        fixup_resource(resource)
+
+        old_timeout = resource.timeout
+        resource.timeout = 150  # ms
+
         idn_str = resource.query("*IDN?")
         if re.search(idn_pattern, idn_str) is not None:
+            resource.timeout = old_timeout
             return resource
         resource.close()
 
     except (pyvisa.VisaIOError, OSError):
         pass
     except Exception as e:
-        warnings.warn(f"unknown exception type while trying to open {visa_addr}: {e}")
+        warnings.warn(
+            f"unknown exception type while trying to open {resource_name}: {e}"
+        )
 
 
-def discover(rm: pyvisa.ResourceManager, idn_pattern: str) -> Optional[pyvisa.Resource]:
+def discover(
+    rm: pyvisa.ResourceManager, resource_pattern: str, idn_pattern: str
+) -> Optional[pyvisa.Resource]:
     """find the first VXI-11 instrument whose "*IDN?" string matches the
     idn_pattern regex
 
     this uses broadcast rfc1050 PMAPPROC_GETPORT messages rather than avahi;
     see get_pmap_message. the response is not parsed; it's possible, but it
     only contains the port, which is trickky to use with pyvisa
+
+    resource_pattern will be used to create the VISA resource name:
+    resource_pattern.format(addr=the_ip_addr)
     """
     import socket
     import select
@@ -112,7 +123,8 @@ def discover(rm: pyvisa.ResourceManager, idn_pattern: str) -> Optional[pyvisa.Re
                         continue
                     seen.add(fromaddr)
 
-                    resource = try_addr(rm, fromaddr, idn_pattern)
+                    resource_name = resource_pattern.format(addr=fromaddr)
+                    resource = try_connect(rm, resource_name, idn_pattern)
                     if resource is not None:
                         return resource
                 else:
@@ -120,7 +132,9 @@ def discover(rm: pyvisa.ResourceManager, idn_pattern: str) -> Optional[pyvisa.Re
 
 
 if __name__ == "__main__":
-    rm = pyvisa.ResourceManager()
+    rm = pyvisa.ResourceManager("@py")
 
-    res = discover(rm, "RIGOL TECHNOLOGIES,DS1...Z")
+    from .resource import DEFAULT_RESOURCE_PATTERN, DEFAULT_IDN_PATTERN
+
+    res = discover(rm, DEFAULT_RESOURCE_PATTERN, DEFAULT_IDN_PATTERN)
     print(res)

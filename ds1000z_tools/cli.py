@@ -1,4 +1,5 @@
 from .exceptions import UserError
+from .resource import DEFAULT_RESOURCE_PATTERN, DEFAULT_IDN_PATTERN
 
 
 def connect(args):
@@ -8,12 +9,12 @@ def connect(args):
 
     name = args.name
     if args.address is not None:
-        name = f"TCPIP::{args.address}::INSTR"
+        name = DEFAULT_RESOURCE_PATTERN.format(addr=args.address)
 
     if name is None:
         from .discover import discover
 
-        res = discover(rm, "RIGOL TECHNOLOGIES,DS1...Z")
+        res = discover(rm, DEFAULT_RESOURCE_PATTERN, DEFAULT_IDN_PATTERN)
         if res is None:
             raise UserError("could not discover a scope, and none was specified")
     else:
@@ -141,12 +142,19 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--visa", default="@py", help="pyvisa VISA implementation to use"
+        "--visa",
+        default="@py",
+        help="pyvisa VISA implementation to use. default: %(default)s",
     )
 
     host_group = parser.add_mutually_exclusive_group()
     host_group.add_argument("--address", "-a", help="scope host name or IP")
-    host_group.add_argument("--name", "-n", help="VISA resource name to connect to")
+    default_name_help = DEFAULT_RESOURCE_PATTERN.format(addr="address")
+    host_group.add_argument(
+        "--name",
+        "-n",
+        help=f"VISA resource name to connect to. default: {default_name_help}",
+    )
 
     subparsers = parser.add_subparsers(title="subcommands", required=True)
 

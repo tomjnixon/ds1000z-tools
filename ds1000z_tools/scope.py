@@ -1,12 +1,11 @@
 import pyvisa
-import socket
-import logging
 import dataclasses
 from enum import Enum
 from tqdm import tqdm
 from typing import Any, Optional
 import numpy as np
 from .exceptions import UserError
+from .resource import fixup_resource
 
 
 class WavFormat(Enum):
@@ -60,42 +59,9 @@ DataDict = dict[str, tuple[Preamble, np.ndarray]]
 
 class DS1000Z:
     def __init__(self, resource: pyvisa.Resource):
+        fixup_resource(resource)
+
         self.resource = resource
-
-        self.resource.read_termination = "\n"
-        self.resource.write_termination = "\n"
-        self.resource.chunk_size = 1000000
-
-        if self.resource.visalib.library_path == "py":
-            from pyvisa_py.tcpip import TCPIPInstrVxi11, TCPIPSocketSession
-
-            session = self.resource.visalib.sessions[self.resource.session]
-
-            # pyvisa_py uses the reveived maxRecvSize value (as max_recv_size)
-            # to limit the message response size, but the VXI-11 spec says that
-            # maxRecvSize "specifies max data size in bytes device will accept
-            # on a write" we're not going to write anything big, so it's ok to
-            # increase this manually. this avoids splitting up reads into
-            # 1500-byte chunks, which massively increases the number of
-            # round-trips
-            if isinstance(session, (TCPIPInstrVxi11, TCPIPSocketSession)):
-                try:
-                    session.max_recv_size = 1000000
-                except:  # noqa
-                    logging.warn("failed to set max_recv_size")
-
-            # TCP_NODELAY helps, which makes sense for RPC
-            try:
-                if isinstance(session, TCPIPInstrVxi11):
-                    session.interface.sock.setsockopt(
-                        socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
-                    )
-                elif isinstance(session, TCPIPSocketSession):
-                    session.interface.setsockopt(
-                        socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
-                    )
-            except:  # noqa
-                logging.warn("failed to set TCP_NODELAY")
 
     def is_stopped(self) -> bool:
         return self.resource.query(":TRIGger:STATus?") == "STOP"
