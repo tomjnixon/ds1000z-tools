@@ -196,6 +196,7 @@ class DS1000Z:
         self, format: str = "PNG", color: bool = True, invert: bool = False
     ) -> bytes:
         """get a screen image"""
+
         def fmt_bool(b: bool) -> str:
             return "ON" if b else "OFF"
 
