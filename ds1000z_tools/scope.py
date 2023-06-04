@@ -67,6 +67,8 @@ class DS1000Z:
         self.resource.chunk_size = 1000000
 
         if self.resource.visalib.library_path == "py":
+            from pyvisa_py.tcpip import TCPIPInstrVxi11, TCPIPSocketSession
+
             session = self.resource.visalib.sessions[self.resource.session]
 
             # pyvisa_py uses the reveived maxRecvSize value (as max_recv_size)
@@ -76,16 +78,22 @@ class DS1000Z:
             # increase this manually. this avoids splitting up reads into
             # 1500-byte chunks, which massively increases the number of
             # round-trips
-            try:
-                session.max_recv_size = 1000000
-            except:  # noqa
-                logging.warn("failed to set max_recv_size")
+            if isinstance(session, (TCPIPInstrVxi11, TCPIPSocketSession)):
+                try:
+                    session.max_recv_size = 1000000
+                except:  # noqa
+                    logging.warn("failed to set max_recv_size")
 
             # supposedly TCP_NODELAY helps, which makes sense for RPC
             try:
-                session.interface.sock.setsockopt(
-                    socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
-                )
+                if isinstance(session, TCPIPInstrVxi11):
+                    session.interface.sock.setsockopt(
+                        socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
+                    )
+                elif isinstance(session, TCPIPSocketSession):
+                    session.interface.setsockopt(
+                        socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
+                    )
             except:  # noqa
                 logging.warn("failed to set TCP_NODELAY")
 
