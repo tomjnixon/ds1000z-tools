@@ -84,7 +84,7 @@ class DS1000Z:
                 except:  # noqa
                     logging.warn("failed to set max_recv_size")
 
-            # supposedly TCP_NODELAY helps, which makes sense for RPC
+            # TCP_NODELAY helps, which makes sense for RPC
             try:
                 if isinstance(session, TCPIPInstrVxi11):
                     session.interface.sock.setsockopt(
