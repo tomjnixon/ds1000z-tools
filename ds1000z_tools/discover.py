@@ -101,6 +101,10 @@ def discover(
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        try:
+            sock.bind(("", 27811))
+        except OSError as e:
+            pass  # uses a random port if not available
 
         # send 'loops' times, each time waiting 'timeout' seconds
         loops = 3

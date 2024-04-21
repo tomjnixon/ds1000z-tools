@@ -50,6 +50,10 @@ ds1000z-tools save-data --help
 
 You'll need a recent python 3 install.
 
+## firewall
+
+Auto-discovery will broadcast UDP to port 111, and expects to be able to receive replies on port 27811; you may need to open this in your firewall.
+
 ## data formats
 
 Currently only numpy (.npy) binary files are supported.
