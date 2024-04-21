@@ -85,7 +85,7 @@ def discover(
 
     this uses broadcast rfc1050 PMAPPROC_GETPORT messages rather than avahi;
     see get_pmap_message. the response is not parsed; it's possible, but it
-    only contains the port, which is trickky to use with pyvisa
+    only contains the port, which is tricky to use with pyvisa
 
     resource_pattern will be used to create the VISA resource name:
     resource_pattern.format(addr=the_ip_addr)
